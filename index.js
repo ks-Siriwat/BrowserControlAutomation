@@ -43,7 +43,7 @@ import Mdaemon from "./Mdaemon.js";
             }
 
             // Avoid hammering the server; wait before next check
-            await pingTimemint(page);
+            await Timemint.pingTimemint(timemintPage);
             await new Promise(resolve => setTimeout(resolve, 30_000)); // check every 30 seconds
         }
     } catch (error) {

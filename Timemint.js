@@ -42,7 +42,7 @@ async function submitTimemintOtp(page, otp) {
 
 async function pingTimemint(page) {
     await page.request.get(`./TMC_SS_ACTIVE.php`, {});
-    console.log('Keeping...');
+    console.log('Keeping Timemint Alive...');
 }
 
 /* --- Helper functions --- */
