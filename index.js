@@ -13,8 +13,10 @@ import Mdaemon from "./Mdaemon.js";
 
         const loggedIn = await Timemint.isTimemintLoggedIn(timemintPage);
         if (!loggedIn) {
-            await Timemint.loginTimemint(timemintPage);
-            await Mdaemon.loginMail(mdaemonPage);
+            await Promise.all([
+                Timemint.loginTimemint(timemintPage), 
+                Mdaemon.loginMail(mdaemonPage).waitForSelector('#messagelist', { timeout: 10_000 })
+            ]);
             const otp = await Mdaemon.getLatestOtpMail(mdaemonPage);
             console.log('✅ receive otp', otp)
             await Timemint.submitTimemintOtp(timemintPage, otp);
