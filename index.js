@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import Timemint from "./Timemint.js";
 import Mdaemon from "./Mdaemon.js";
+import Utils from "./utils.js";
 
 (async () => {
     const browser = await chromium.launch({ headless: false });
@@ -14,7 +15,7 @@ import Mdaemon from "./Mdaemon.js";
         const loggedIn = await Timemint.isTimemintLoggedIn(timemintPage);
         if (!loggedIn) {
             await Promise.all([
-                Timemint.loginTimemint(timemintPage), 
+                Timemint.loginTimemint(timemintPage),
                 Mdaemon.loginMail(mdaemonPage)
             ]);
             const otp = await Mdaemon.getLatestOtpMail(mdaemonPage);
@@ -26,11 +27,12 @@ import Mdaemon from "./Mdaemon.js";
         // ... this should while loop checking new mail (loop forever);
         while (true) {
             // get request new location mails
-            let newLocationRequests = await Mdaemon.getRequestAddingLocations();
+            let newLocationRequests = await Mdaemon.getRequestAddingLocations(mdaemonPage);
             // Sample data -> [{ LocationName: "N.570 GPS", Lat: "10.1234", Long: "9.8765" }];
             // Sample data -> [{ From: "N.570", To: "N.888" }]
 
             for (const request of newLocationRequests) {
+                const extracted = Utils.extractRequest(request);
                 if ("Lat" in request && "Long" in request) {
                     // 🗺️ Type 1: GPS-based location request
                     await Timemint.handleNewLocation(timemintPage, request);
@@ -44,7 +46,7 @@ import Mdaemon from "./Mdaemon.js";
 
             // Avoid hammering the server; wait before next check
             await Timemint.pingTimemint(timemintPage);
-            await new Promise(resolve => setTimeout(resolve, 30_000)); // check every 30 seconds
+            await new Promise(resolve => setTimeout(resolve, 20000)); // check every 20 seconds
         }
     } catch (error) {
         console.error(`!!! ${error}`);

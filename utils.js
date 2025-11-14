@@ -1,5 +1,9 @@
 export default {
-    extractGPS
+    extractRequest
+}
+
+async function extractRequest() {
+
 }
 
 function extractGPS(text) {

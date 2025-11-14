@@ -31,12 +31,33 @@ async function getLatestOtpMail(page) {
     return extractOtp(emailBody);
 }
 
-async function getRequestAddingLocations() {
+async function getRequestAddingLocations(page) {
     // should return these format
     // Sample data -> [{ LocationName: "N.570 GPS", Lat: "10.1234", Long: "9.8765" }];
     // Sample data -> [{ From: "N.570", To: "N.888" }]
+    const locationRequests = page.locator('.tableRow.unread').filter({
+        has: page.locator('.subject'),
+        hasText: /(ตำแหน่ง|พิกัด)/,
+    });
 
+    const count = await locationRequests.count();
+    if (count > 0)
+        console.log(`found ${count} new requests`);
 
+    const requestMessages = [];
+
+    for (let i = 0; i < count; i++) {
+        console.log(`process a request message ${i + 1}/${count}`);
+        const row = locationRequests.nth(i);
+        row.click();
+        // open the email or extract inline body
+        const iframeMessage = await getEmailBody(page);
+        await iframeMessage.waitForSelector('body');
+        const message = extractMessage(iframeMessage);
+        requestMessages.push(message);
+    }
+
+    return requestMessages;
 }
 
 /* --- helper functions --- */
@@ -88,3 +109,16 @@ async function extractOtp(bodyFrame) {
 }
 
 // -------------- GPS ----------------
+async function extractData(frame) {
+    // get the email HTML
+    const html = await frame.locator('body').innerHTML();
+
+    // convert HTML to text (simple, remove tags)
+    const message = html
+        .replace(/&nbsp;/g, '\n')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return message;
+}

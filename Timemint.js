@@ -41,8 +41,11 @@ async function submitTimemintOtp(page, otp) {
 }
 
 async function pingTimemint(page) {
-    await page.request.get(`./TMC_SS_ACTIVE.php`, {});
-    console.log('Keeping Timemint Alive...');
+    await page.request.get(
+        'https://member.timemint.co/TMC_SS_ACTIVE.php',
+        { params: { AC: 'CHECK' } }
+    );
+    // console.log('Keeping Timemint Alive...');
 }
 
 /* --- Helper functions --- */
